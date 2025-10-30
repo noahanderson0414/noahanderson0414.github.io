@@ -36,7 +36,7 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir artifact
-          cp target/wasm32-unknown-unknown/release/*.wasm artifact/
+          cp target/wasm32-unknown-unknown/release/noahanderson0414.wasm artifact/
           cp index.html artifact/
       - name: Setup Pages
         uses: actions/configure-pages@v5
