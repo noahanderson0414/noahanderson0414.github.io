@@ -9,7 +9,7 @@ async fn main() {
         loop {
             clear_background(BLACK);
 
-            draw_text("WORK IN PROGRESS", 0., 0., 12., WHITE);
+            draw_text("WORK IN PROGRESS", 16., 48., 64., WHITE);
 
             next_frame().await
         }
