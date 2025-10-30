@@ -1,85 +1,71 @@
 use macroquad::prelude::*;
 
-#[derive(Default)]
-pub enum Anchor {
-    TopLeft,
-    TopRight,
-    #[default]
-    Center,
+pub trait Component {
+    fn draw(&self, position: Vec2, size: Vec2);
 }
 
-impl Anchor {
-    pub fn offset(&self, position: Vec2, size: Vec2) -> Vec2 {
-        match self {
-            Self::TopLeft => position,
-            Self::TopRight => position - Vec2::new(size.x, 0.),
-            Self::Center => position - size / 2.,
+pub struct Container {
+    pub position: Vec2,
+    pub size: Vec2,
+    pub components: Vec<Box<dyn Component>>,
+    pub containers: Vec<Container>,
+}
+
+impl Default for Container {
+    fn default() -> Self {
+        Self {
+            position: Default::default(),
+            size: Vec2::splat(1.),
+            components: Default::default(),
+            containers: Default::default(),
         }
     }
 }
 
-pub struct Rectangle {
-    pub position: Vec2,
-    pub size: Vec2,
-    pub anchor: Anchor,
+impl Container {
+    pub fn draw(&mut self) {
+        let mut position = self.position;
+        let mut size = self.size;
+        size.x /= self.components.len() as f32;
+
+        println!("{:?}\n{:?}\n", self.position, self.size);
+
+        for component in self.components.iter() {
+            component.draw(position, size);
+            position.x += size.x;
+        }
+
+        position = self.position;
+        size = self.size;
+        size.x /= self.containers.len() as f32;
+
+        for container in self.containers.iter_mut() {
+            container.position = position;
+            container.size = size;
+            container.draw();
+            position.x += size.x;
+        }
+    }
+}
+
+pub struct Panel {
     pub color: Color,
 }
 
-impl Default for Rectangle {
+impl Default for Panel {
     fn default() -> Self {
         Self {
-            position: Vec2::splat(0.5),
-            size: Vec2::splat(0.5),
-            anchor: Default::default(),
             color: WHITE,
         }
     }
 }
 
-impl Rectangle {
-    pub fn draw(&self) {
+impl Component for Panel {
+    fn draw(&self, position: Vec2, size: Vec2) {
         let screen_size = Vec2::new(screen_width(), screen_height());
-        let position = self.anchor.offset(self.position, self.size) * screen_size;
-        let size = self.size * screen_size;
+        let position = position * screen_size;
+        let size = size * screen_size;
 
         draw_rectangle(position.x, position.y, size.x, size.y, self.color);
-    }
-}
-
-pub struct RoundedRectangle {
-    pub position: Vec2,
-    pub size: Vec2,
-    pub radius: f32,
-    pub sides: u8,
-    pub anchor: Anchor,
-    pub color: Color,
-}
-
-impl Default for RoundedRectangle {
-    fn default() -> Self {
-        Self {
-            position: Vec2::splat(0.5),
-            size: Vec2::splat(0.5),
-            radius: 0.1,
-            sides: 32,
-            anchor: Default::default(),
-            color: WHITE,
-        }
-    }
-}
-
-impl RoundedRectangle {
-    pub fn draw(&self) {
-        let screen_size = Vec2::new(screen_width(), screen_height());
-        let position = self.anchor.offset(self.position, self.size) * screen_size;
-        let size = self.size * screen_size;
-        let radius = self.radius * size.x.min(size.y) / 2.;
-
-        draw_poly(position.x + radius, position.y + radius, self.sides, radius, 0., self.color);
-        draw_poly(position.x + size.x - radius, position.y + radius, self.sides, radius, 0., self.color);
-        draw_poly(position.x + size.x - radius, position.y + size.y - radius, self.sides, radius, 0., self.color);
-        draw_poly(position.x + radius, position.y + size.y - radius, self.sides, radius, 0., self.color);
-        draw_rectangle(position.x, position.y + radius, size.x, size.y - radius * 2., self.color);
-        draw_rectangle(position.x + radius, position.y, size.x - radius * 2., size.y, self.color);
     }
 }
