@@ -5,6 +5,16 @@ use macroquad::prelude::*;
 
 #[macroquad::main("macroquad_test")]
 async fn main() {
+    if cfg!(target_arch = "wasm32") {
+        loop {
+            clear_background(BLACK);
+
+            draw_text("WORK IN PROGRESS", 0., 0., 12., WHITE);
+
+            next_frame().await
+        }
+    }
+
     let left_rectangle = RoundedRectangle {
         position: Vec2::splat(0.025),
         size: Vec2::new(0.4625, 0.95),
