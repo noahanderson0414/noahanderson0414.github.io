@@ -20,6 +20,8 @@ async fn main() {
     }
 
     let mut container = Container {
+        inner_margin: 0.01,
+        outer_margin: 0.01,
         containers: vec![
             Container {
                 components: vec![
@@ -31,14 +33,30 @@ async fn main() {
                 ..Default::default()
             },
             Container {
-                components: vec![
-                    Box::new(Panel {
-                        color: BLUE,
+                inner_margin: 0.01,
+                align: Align::Vertical,
+                containers: vec![
+                    Container {
+                        components: vec![
+                            Box::new(Panel {
+                                color: GREEN,
+                                ..Default::default()
+                            }),
+                        ],
                         ..Default::default()
-                    }),
+                    },
+                    Container {
+                        components: vec![
+                            Box::new(Panel {
+                                color: BLUE,
+                                ..Default::default()
+                            }),
+                        ],
+                        ..Default::default()
+                    },
                 ],
                 ..Default::default()
-            }
+            },
         ],
         ..Default::default()
     };

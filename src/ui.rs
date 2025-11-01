@@ -4,9 +4,19 @@ pub trait Component {
     fn draw(&self, position: Vec2, size: Vec2);
 }
 
+#[derive(Default)]
+pub enum Align {
+    #[default]
+    Horizontal,
+    Vertical,
+}
+
 pub struct Container {
     pub position: Vec2,
     pub size: Vec2,
+    pub inner_margin: f32,
+    pub outer_margin: f32,
+    pub align: Align,
     pub components: Vec<Box<dyn Component>>,
     pub containers: Vec<Container>,
 }
@@ -14,36 +24,46 @@ pub struct Container {
 impl Default for Container {
     fn default() -> Self {
         Self {
-            position: Default::default(),
-            size: Vec2::splat(1.),
-            components: Default::default(),
-            containers: Default::default(),
+            position: Vec2::ZERO,
+            size: Vec2::ONE,
+            inner_margin: 0.,
+            outer_margin: 0.,
+            align: Align::default(),
+            components: Vec::default(),
+            containers: Vec::default(),
         }
     }
 }
 
 impl Container {
     pub fn draw(&mut self) {
-        let mut position = self.position;
-        let mut size = self.size;
-        size.x /= self.components.len() as f32;
+        let inner_margin = Vec2::splat(self.inner_margin);
+        let outer_margin = Vec2::splat(self.outer_margin);
+        let align = match self.align {
+            Align::Horizontal => Vec2::X,
+            Align::Vertical => Vec2::Y,
+        };
 
-        println!("{:?}\n{:?}\n", self.position, self.size);
+        let mut position = self.position + outer_margin;
+        let mut size = self.size - outer_margin * 2.;
+        size -= align * inner_margin.x * (self.components.len().max(1) - 1) as f32;
+        size /= (align * self.components.len() as f32).max(Vec2::ONE);
 
         for component in self.components.iter() {
             component.draw(position, size);
-            position.x += size.x;
+            position += align * (size + inner_margin);
         }
 
-        position = self.position;
-        size = self.size;
-        size.x /= self.containers.len() as f32;
+        position = self.position + outer_margin;
+        size = self.size - outer_margin * 2.;
+        size -= align * inner_margin.x * (self.containers.len().max(1) - 1) as f32;
+        size /= (align * self.containers.len().max(1) as f32).max(Vec2::ONE);
 
         for container in self.containers.iter_mut() {
             container.position = position;
             container.size = size;
             container.draw();
-            position.x += size.x;
+            position += align * (size + inner_margin);
         }
     }
 }
