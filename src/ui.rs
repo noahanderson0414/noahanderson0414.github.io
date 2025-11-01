@@ -37,8 +37,14 @@ impl Default for Container {
 
 impl Container {
     pub fn draw(&mut self) {
-        let inner_margin = Vec2::splat(self.inner_margin);
-        let outer_margin = Vec2::splat(self.outer_margin);
+        let screen_size = Vec2::new(screen_width(), screen_height());
+        let aspect = if screen_size.x < screen_size.y {
+            Vec2::new(1., screen_size.x / screen_size.y)
+        } else {
+            Vec2::new(screen_size.y / screen_size.x, 1.)
+        };
+        let inner_margin = Vec2::splat(self.inner_margin) * aspect;
+        let outer_margin = Vec2::splat(self.outer_margin) * aspect;
         let align = match self.align {
             Align::Horizontal => Vec2::X,
             Align::Vertical => Vec2::Y,
