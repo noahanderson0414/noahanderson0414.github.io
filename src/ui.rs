@@ -16,6 +16,8 @@ pub struct Container {
     pub size: Vec2,
     pub inner_margin: f32,
     pub outer_margin: f32,
+    pub weight: f32,
+    pub color: Color,
     pub align: Align,
     pub components: Vec<Box<dyn Component>>,
     pub containers: Vec<Container>,
@@ -28,6 +30,8 @@ impl Default for Container {
             size: Vec2::ONE,
             inner_margin: 0.,
             outer_margin: 0.,
+            weight: 1.,
+            color: BLACK,
             align: Align::default(),
             components: Vec::default(),
             containers: Vec::default(),
@@ -37,39 +41,29 @@ impl Default for Container {
 
 impl Container {
     pub fn draw(&mut self) {
-        let screen_size = Vec2::new(screen_width(), screen_height());
-        let aspect = if screen_size.x < screen_size.y {
-            Vec2::new(1., screen_size.x / screen_size.y)
-        } else {
-            Vec2::new(screen_size.y / screen_size.x, 1.)
-        };
-        let inner_margin = Vec2::splat(self.inner_margin) * aspect;
-        let outer_margin = Vec2::splat(self.outer_margin) * aspect;
+        for component in self.components.iter() {
+            component.draw(self.position, self.size);
+        }
+
         let align = match self.align {
             Align::Horizontal => Vec2::X,
             Align::Vertical => Vec2::Y,
         };
 
-        let mut position = self.position + outer_margin;
-        let mut size = self.size - outer_margin * 2.;
-        size -= align * inner_margin.x * (self.components.len().max(1) - 1) as f32;
-        size /= (align * self.components.len() as f32).max(Vec2::ONE);
+        let mut position = self.position;
+        let size = self.size - self.outer_margin * 2.;
 
-        for component in self.components.iter() {
-            component.draw(position, size);
-            position += align * (size + inner_margin);
+        let mut total_weight = 0.;
+        for container in self.containers.iter() {
+            total_weight += container.weight;
         }
 
-        position = self.position + outer_margin;
-        size = self.size - outer_margin * 2.;
-        size -= align * inner_margin.x * (self.containers.len().max(1) - 1) as f32;
-        size /= (align * self.containers.len().max(1) as f32).max(Vec2::ONE);
-
         for container in self.containers.iter_mut() {
+            let weight_percent = container.weight / total_weight;
             container.position = position;
-            container.size = size;
+            container.size = size * (align * weight_percent + Vec2::ONE - align);
             container.draw();
-            position += align * (size + inner_margin);
+            position += align * container.size;
         }
     }
 }
