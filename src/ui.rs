@@ -90,11 +90,41 @@ impl Default for Panel {
 }
 
 impl Component for Panel {
-    fn draw(&self, position: Vec2, size: Vec2) {
+    fn draw(&self, mut position: Vec2, mut size: Vec2) {
         let screen_size = Vec2::new(screen_width(), screen_height());
-        let position = position * screen_size;
-        let size = size * screen_size;
+        position *= screen_size;
+        size *= screen_size;
 
         draw_rectangle(position.x, position.y, size.x, size.y, self.color);
+    }
+}
+
+pub struct RoundedPanel {
+    pub color: Color,
+    pub radius: f32,
+}
+
+impl Default for RoundedPanel {
+    fn default() -> Self {
+        Self {
+            color: WHITE,
+            radius: 0.,
+        }
+    }
+}
+
+impl Component for RoundedPanel {
+    fn draw(&self, mut position: Vec2, mut size: Vec2) {
+        let screen_size = Vec2::new(screen_width(), screen_height());
+        let radius = self.radius * screen_size.x.min(screen_size.y);
+        position *= screen_size;
+        size *= screen_size;
+
+        draw_circle(position.x + radius, position.y + radius, radius, self.color);
+        draw_circle(position.x + size.x - radius, position.y + radius, radius, self.color);
+        draw_circle(position.x + radius, position.y + size.y - radius, radius, self.color);
+        draw_circle(position.x + size.x - radius, position.y + size.y - radius, radius, self.color);
+        draw_rectangle(position.x, position.y + radius, size.x, size.y - radius * 2., self.color);
+        draw_rectangle(position.x + radius, position.y, size.x - radius * 2., size.y, self.color);
     }
 }

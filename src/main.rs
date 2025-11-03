@@ -22,12 +22,18 @@ async fn main() {
     let mut container = Container {
         outer_margin: 0.01,
         inner_margin: 0.01,
+        components: vec![
+            Box::new(Panel {
+                color: Color::from_vec(Vec4::new(0.1, 0.1, 0.1, 1.)),
+            }),
+        ],
         containers: vec![
             Container {
                 weight: 2.,
                 components: vec![
-                    Box::new(Panel {
+                    Box::new(RoundedPanel {
                         color: RED,
+                        radius: 0.025,
                     }),
                 ],
                 ..Default::default()
@@ -40,16 +46,18 @@ async fn main() {
                     Container {
                         weight: 2.,
                         components: vec![
-                            Box::new(Panel {
+                            Box::new(RoundedPanel {
                                 color: BLUE,
+                                radius: 0.025,
                             }),
                         ],
                         ..Default::default()
                     },
                     Container {
                         components: vec![
-                            Box::new(Panel {
+                            Box::new(RoundedPanel {
                                 color: GREEN,
+                                radius: 0.025,
                             }),
                         ],
                         ..Default::default()
