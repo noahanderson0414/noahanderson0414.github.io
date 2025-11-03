@@ -50,8 +50,17 @@ impl Container {
             Align::Vertical => Vec2::Y,
         };
 
-        let mut position = self.position;
-        let size = self.size - self.outer_margin * 2.;
+        let screen_size = Vec2::new(screen_width(), screen_height());
+        let aspect = if screen_size.x > screen_size.y {
+            Vec2::new(screen_size.y / screen_size.x, 1.)
+        } else {
+            Vec2::new(1., screen_size.x / screen_size.y)
+        };
+
+        let outer_margin = self.outer_margin * aspect;
+        let inner_margin = self.inner_margin * aspect;
+        let mut position = self.position + outer_margin;
+        let size = self.size - outer_margin * 2. - align * inner_margin * (self.containers.len() as f32 - 1.);
 
         let mut total_weight = 0.;
         for container in self.containers.iter() {
@@ -63,7 +72,7 @@ impl Container {
             container.position = position;
             container.size = size * (align * weight_percent + Vec2::ONE - align);
             container.draw();
-            position += align * container.size;
+            position += align * (container.size + inner_margin);
         }
     }
 }
