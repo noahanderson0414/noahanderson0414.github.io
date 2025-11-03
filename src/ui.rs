@@ -100,15 +100,19 @@ impl Component for Panel {
 }
 
 pub struct RoundedPanel {
+    pub material: Option<Material>,
     pub color: Color,
     pub radius: f32,
+    pub sides: u8,
 }
 
 impl Default for RoundedPanel {
     fn default() -> Self {
         Self {
+            material: None,
             color: WHITE,
             radius: 0.,
+            sides: 32,
         }
     }
 }
@@ -116,14 +120,21 @@ impl Default for RoundedPanel {
 impl Component for RoundedPanel {
     fn draw(&self, mut position: Vec2, mut size: Vec2) {
         let screen_size = Vec2::new(screen_width(), screen_height());
-        let radius = self.radius * screen_size.x.min(screen_size.y);
         position *= screen_size;
         size *= screen_size;
+        let radius = (self.radius * screen_size.x.min(screen_size.y)).min(size.x.min(size.y) / 2.);
 
-        draw_circle(position.x + radius, position.y + radius, radius, self.color);
-        draw_circle(position.x + size.x - radius, position.y + radius, radius, self.color);
-        draw_circle(position.x + radius, position.y + size.y - radius, radius, self.color);
-        draw_circle(position.x + size.x - radius, position.y + size.y - radius, radius, self.color);
+        if let Some(material) = self.material.as_ref() {
+            material.set_uniform("Color", self.color.to_vec());
+            gl_use_material(material);
+        } else {
+            gl_use_default_material();
+        }
+
+        draw_poly(position.x + radius, position.y + radius, self.sides, radius, 0., self.color);
+        draw_poly(position.x + size.x - radius, position.y + radius, self.sides, radius, 0., self.color);
+        draw_poly(position.x + radius, position.y + size.y - radius, self.sides, radius, 0., self.color);
+        draw_poly(position.x + size.x - radius, position.y + size.y - radius, self.sides, radius, 0., self.color);
         draw_rectangle(position.x, position.y + radius, size.x, size.y - radius * 2., self.color);
         draw_rectangle(position.x + radius, position.y, size.x - radius * 2., size.y, self.color);
     }
