@@ -12,9 +12,17 @@ uniform sampler2D _ScreenTexture;
 void main() {
     vec4 total = vec4(0.0);
 
-    for (int y = int(-radius); y <= int(radius); y++) {
-        for (int x = int(-radius); x <= int(radius); x++) {
-            total += texture2D(_ScreenTexture, uv_screen + vec2(x, y) * texel_size);
+    for (int y = 0; y <= 2048; y++) {
+        if (y > int(radius) * 2) {
+            break;
+        }
+
+        for (int x = 0; x <= 2048; x++) {
+            if (x > int(radius) * 2) {
+                break;
+            }
+
+            total += texture2D(_ScreenTexture, uv_screen + vec2(x - int(radius), y - int(radius)) * texel_size);
         }
     }
 
